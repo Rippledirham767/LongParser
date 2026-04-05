@@ -1,5 +1,5 @@
 <p align="center">
-  <!-- Logo goes here once ready -->
+  <img src="https://raw.githubusercontent.com/ENDEVSOLS/LongParser/main/docs/assets/logo.png" alt="LongParser" width="200">
   <h1 align="center">LongParser</h1>
   <p align="center"><strong>Privacy-first document intelligence engine for production RAG pipelines.</strong></p>
   <p align="center">
